@@ -13,11 +13,11 @@ export async function main(){
       name: 'Test User',
       password: 'password'
     }
-
   })
 
   console.log(user)
 }
+
 main()
   .then(() => prisma.$disconnect())
   .catch(async (e) => {
