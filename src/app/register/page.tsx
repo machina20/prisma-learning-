@@ -9,10 +9,7 @@ export default function register() {
 				<RegisterForm></RegisterForm>
 				<p className="text-center">
 					Have an account?{" "}
-					<Link
-						className="text-gray-500 hover:underline"
-						href={"/api/auth/signin"}
-					>
+					<Link className="text-gray-500 hover:underline" href={"/login"}>
 						Sign in
 					</Link>
 				</p>
