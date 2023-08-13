@@ -7,6 +7,7 @@ import { useState } from "react";
 import { redirect } from "next/dist/server/api-utils";
 import { signIn } from "next-auth/react";
 import { Alert } from "@/components/ui/alert";
+import Credentials from "next-auth/providers/credentials";
 
 export const LoginForm = () => {
 	const [email, setEmail] = useState("");
@@ -15,11 +16,9 @@ export const LoginForm = () => {
 
 	const onSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-
-		try {
-		} catch (err: any) {}
+		console.log("clicked login");
+		signIn("credentials", { email, password, callbackUrl: "/dashboard" });
 	};
-
 	return (
 		<form onSubmit={onSubmit} className="space-y-12 w-full sm:w-[400px]">
 			<div className="grid w-full  items-center gap-1.5">

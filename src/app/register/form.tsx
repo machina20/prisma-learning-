@@ -29,7 +29,7 @@ export const RegisterForm = () => {
 			});
 			if (res.ok) {
 				//redirect to login
-				signIn();
+				signIn("credentials", { email, password, callbackUrl: "/dashboard" });
 			} else {
 				console.log(error);
 				setError((await res.json()).error);
@@ -68,7 +68,7 @@ export const RegisterForm = () => {
 			<div className="w-full">
 				{error && <Alert>{error}</Alert>}
 				<Button className="w-full bg-[#201F1F] hover:bg-gray-600" size={"lg"}>
-					Register
+					Sign up
 				</Button>
 			</div>
 		</form>
