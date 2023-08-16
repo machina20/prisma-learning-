@@ -2,6 +2,12 @@ import NextAuth, {type NextAuthOptions} from "next-auth";
 import  CredentialsProvider  from "next-auth/providers/credentials";
 import { prisma } from "../../../../../lib/prisma";
 import { compare } from "bcrypt";
+import { NextResponse } from "next/server";
+
+
+function wait(seconds: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+}
 
 export const authOptions: NextAuthOptions = {
   pages:{
@@ -13,6 +19,7 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
+      
       name: 'Sign in',
       credentials: {
         email: {
@@ -24,6 +31,7 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials){
+        
         if (!credentials?.email || !credentials?.password){
           return null
         }
@@ -55,7 +63,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     session: ({session, token}) =>{
-      console.log("session callback", {session, token})
+      
       return {
         ...session,
         user: {
@@ -66,7 +74,7 @@ export const authOptions: NextAuthOptions = {
       }
     },
     jwt: ({token, user}) => {
-      console.log("jwt callback:", {token, user})
+      
       //check if user is being passed in (aka the client logged in)
       if(user){
         const u = user as unknown as any
