@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
 
       async authorize(credentials){
         
+      
         if (!credentials?.email || !credentials?.password){
           return null
         }
@@ -45,12 +46,21 @@ export const authOptions: NextAuthOptions = {
         if (!user){
           return null
         }
-        
+
+        // return null if the user isn't active
+        if(!user.active){
+          console.log("the user hasn't verified their email yet")
+          throw new Error('The user attempting to log in has not verified their email yet')
+          return null
+        }
+
         const isPasswordValid = await compare(credentials.password, user.password)
 
         if (!isPasswordValid){
           return null
         }
+
+
         //we have to return it as a string
         return {
           id: user.id + "",
