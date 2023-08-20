@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { randomUUID } from "crypto";
 import formData from "form-data";
 import Mailgun from "mailgun.js";
+import { NextResponse } from "next/server";
+import { startTransition, useTransition } from "react";
 
 export default async function Register() {
 	if (await getServerSession()) {
@@ -37,14 +39,15 @@ export default async function Register() {
 		});
 
 		if (userExists) {
-			console.log("user with that email exists");
-			return null;
-		} else {
-			console.log("that email is available");
+			return new NextResponse(
+				JSON.stringify({
+					message: "There is  already an account associated with that email.",
+				}),
+				{ status: 400 }
+			);
 		}
 
 		//else create the user
-		console.log(password);
 		if (password) {
 			const user = await prisma.user.create({
 				data: {
@@ -85,10 +88,17 @@ export default async function Register() {
 				.create(DOMAIN as string, messageData)
 				.then((msg) => console.log(msg)) // logs response data
 				.catch((err) => console.log(err));
-
-			signIn("credentials", { email, password, callbackUrl: "/dashboard" });
 		}
+
+		return new NextResponse(
+			JSON.stringify({
+				message: "user created successfull",
+			}),
+			{ status: 200 }
+		);
 	}
+
+	console.log();
 	return (
 		<div className="h-screen  w-screen flex justify-center items-center sm:bg-[#201F1F]">
 			<div className="sm:shadow-xl px-8 py-8 sm:bg-white rounded-lg space-y-12">

@@ -4,14 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { redirect } from "next/dist/server/api-utils";
 import { signIn } from "next-auth/react";
 import { Alert } from "@/components/ui/alert";
+import { Success } from "@/components/ui/success";
+import { redirect } from "next/navigation";
 
 export const RegisterForm = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
+	const [message, setMessage] = useState("");
 
 	const onSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -27,11 +29,15 @@ export const RegisterForm = () => {
 					"Content-Type": "application/json",
 				},
 			});
+
 			if (res.ok) {
-				//redirect to login
-				signIn("credentials", { email, password, callbackUrl: "/dashboard" });
+				//redirect to Verify page
+				setMessage((await res.json()).message);
+				setError("");
+				redirect("/verifyprompt");
 			} else {
-				console.log(error);
+				console.log("error hit", error);
+
 				setError((await res.json()).error);
 			}
 		} catch (err: any) {
@@ -67,6 +73,7 @@ export const RegisterForm = () => {
 			</div>
 			<div className="w-full">
 				{error && <Alert>{error}</Alert>}
+				{message && <Success>{message}</Success>}
 				<Button className="w-full bg-[#201F1F] hover:bg-gray-600" size={"lg"}>
 					Sign up
 				</Button>

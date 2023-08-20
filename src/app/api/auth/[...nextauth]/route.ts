@@ -5,10 +5,6 @@ import { compare } from "bcrypt";
 import { NextResponse } from "next/server";
 
 
-function wait(seconds: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, seconds * 1000));
-}
-
 export const authOptions: NextAuthOptions = {
   pages:{
     signIn: '/login'
@@ -27,21 +23,30 @@ export const authOptions: NextAuthOptions = {
           type: 'email',
           placeholder: 'hello@example.com'
         },
-        password: {label: 'Password', type: 'password'}
+        password: {label: 'Password', type: 'password'}, token: {}
       },
 
-      async authorize(credentials){
-        
       
+      async authorize(credentials){ 
+
+        console.log("entered the authorize function")
         if (!credentials?.email || !credentials?.password){
-          return null
+          if(!credentials?.token){ //if the singin is missing the token as well as a username OR a pass
+            console.log("line 35", !credentials?.token)
+            return null
+
+          }
         }
 
+        console.log("token",credentials?.token)
+
+        //find the user based on the email
         const user = await prisma.user.findUnique({
           where: {
             email: credentials.email
           }
         })
+        
         //we looked up the user, lets see if it exists
         if (!user){
           return null
@@ -50,12 +55,41 @@ export const authOptions: NextAuthOptions = {
         // return null if the user isn't active
         if(!user.active){
           console.log("the user hasn't verified their email yet")
-          throw new Error('The user attempting to log in has not verified their email yet')
+          // return new NextResponse(JSON.stringify({
+          //   error: "You still have to verify your email address"
+          // }))
           return null
         }
 
         const isPasswordValid = await compare(credentials.password, user.password)
 
+        //if the user is signing in with a verify-token
+        //lookup the token
+        console.log("entering the token validation conditionals")
+        console.log("credentials.token =", credentials.token)
+
+        if (credentials.token){
+          const token = await prisma.activateToken.findFirst({
+            where: {
+              token: credentials.token //find the activation token matching the user
+            }
+          })
+      
+          if(token){ //if the token is activated, its an old token and CANT be used to log in
+            if(token.activatedAt){
+              throw new Error("tried to auth with an already activated token")
+              return null
+
+            }
+
+            if (token.userId !== user.id){  //if the unactivated user token doesn't match the token given on signin
+              return null
+            }
+            console.log("the token.id matches the user.id")
+          }
+        } //if the user submitted a token, the token matches the users ID, and the token is inactive, we continue 
+        
+      
         if (!isPasswordValid){
           return null
         }
@@ -65,7 +99,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id + "",
           email: user.email,
-          name: user.name,
+          name: user.name || null,
           randomKey: "uhhhhhhh"
         }
       }
